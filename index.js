@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
+app.use(express.static("dist"));
 const morgan = require("morgan");
 app.use(express.json());
 app.use(morgan("tiny"));
