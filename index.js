@@ -1,13 +1,11 @@
 const express = require("express");
+const cors = require("cors");
 const app = express();
 const morgan = require("morgan");
 app.use(express.json());
 app.use(morgan("tiny"));
-const unknownEndpoint = (request, response) => {
-  response.status(404).send({ error: "unknown endpoint" });
-};
+app.use(cors());
 
-app.use(unknownEndpoint);
 let persons = [
   {
     id: 1,
@@ -55,6 +53,19 @@ app.get("/api/persons/:id", (request, response) => {
     response.status(404).end();
   }
 });
+app.put("/api/persons/:id", (request, response) => {
+  const id = Number(request.params.id);
+  const updatedPerson = request.body; // This contains the updated data
+
+  const personIndex = persons.findIndex((person) => person.id === id);
+  if (personIndex !== -1) {
+    // Update the person if found
+    persons[personIndex] = { ...persons[personIndex], ...updatedPerson };
+    response.json(persons[personIndex]);
+  } else {
+    response.status(404).send({ error: "Person not found" });
+  }
+});
 
 app.delete("/api/persons/:id", (request, response) => {
   const id = Number(request.params.id);
@@ -62,10 +73,6 @@ app.delete("/api/persons/:id", (request, response) => {
 
   response.status(204).end();
 });
-
-const generateId = () => {
-  return Math.floor(Math.random() * 1000);
-};
 
 app.post("/api/persons", (request, response) => {
   const body = request.body;
@@ -89,7 +96,7 @@ app.post("/api/persons", (request, response) => {
   const person = {
     name: body.name,
     number: body.number,
-    id: generateId(),
+    id: body.id,
   };
 
   persons = persons.concat(person);
@@ -97,7 +104,7 @@ app.post("/api/persons", (request, response) => {
   response.json(person);
 });
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
